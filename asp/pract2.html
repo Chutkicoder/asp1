@@ -1,0 +1,94 @@
+Open Visual Studio 2019 → File → New → Project
+Choose Class Library (.NET Framework) – C#
+Name it: MathLibrary
+Click Create
+Replace the default Class1.cs with your MyMath.cs
+
+using System;
+
+namespace MathLibrary
+{
+    public class MyMath   // Make sure the class is public
+    {
+        public int Add(int a, int b)
+        {
+            return a + b;
+        }
+
+        public int Sub(int a, int b)
+        {
+            return a - b;
+        }
+
+        public int Mul(int a, int b)
+        {
+            return a * b;
+        }
+
+        public int Div(int a, int b)
+        {
+            return a / b; // integer division
+        }
+    }
+}
+
+Right-click Solution → Add → New Project
+Choose Unit Test Project (.NET Framework) – C#
+Name it: MathLibrary.Tests
+Click Create
+
+
+replace class to MYTestCase
+make sure no other class are present 
+if present right click delete
+
+using NUnit.Framework;
+using MathLibrary;  // Reference to main project
+
+namespace MathLibrary.Tests
+{
+    [TestFixture]
+    public class MyTestCase
+    {
+        [Test]
+        public void Add()
+        {
+            MyMath math = new MyMath();
+            Assert.AreEqual(31, math.Add(20, 11)); // 20 + 11 = 31
+        }
+
+        [Test]
+        public void Sub()
+        {
+            MyMath math = new MyMath();
+            Assert.AreEqual(9, math.Sub(20, 11)); // 20 - 11 = 9
+        }
+
+        [Test]
+        public void Mul()
+        {
+            MyMath math = new MyMath();
+            Assert.AreEqual(220, math.Mul(20, 11)); // 20 * 11 = 220
+        }
+
+        [Test]
+        public void Div()
+        {
+            MyMath math = new MyMath();
+            Assert.AreEqual(1, math.Div(20, 11)); // integer division 20 / 11 = 1
+        }
+    }
+}
+
+Right-click References in MathLibrary.Tests
+Select Add Reference → Projects → MathLibrary → OK
+Right-click MathLibrary.Tests → Manage NuGet Packages
+Install these three packages:
+NUnit
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk(click ok for everything)
+now in installed tab
+if in installed tabs these two packages are availabale
+Make sure MSTest packages (MSTest.TestAdapter, MSTest.TestFramework) are uninstalled 
+then from build->rebuild solution for cleaner code or control+shift+B,use this one.
+then test from above->test explorer then |> this green button or control+R,A use this
