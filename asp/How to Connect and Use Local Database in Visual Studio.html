@@ -1,0 +1,271 @@
+Click Create a new project
+In the search box, type:
+Windows Forms App (.NET Framework)
+project name:LocalDBApp
+Framework: .NET Framework 4.8 (or latest)
+VS2019 will open Form1.cs in Design view automatically
+In Visual Studio 2019, go to the top menu → View → SQL Server Object Explorer
+A panel opens (usually on the right side) showing all SQL Server instances
+xpand SQL Server → (localdb)\MSSQLLocalDB
+If you don’t see (localdb)\MSSQLLocalDB, right-click SQL Server → Add SQL Server → Choose Local → Connect
+Step 3: Add a New Database
+Right-click Databases under (localdb)\MSSQLLocalDB
+Select Add New Database…
+In the dialog that appears, type the name:
+Database.mdf
+Click OK
+A new database is created and appears under Databases
+Right-click your new database → New Query
+
+Paste your table script:
+//code
+CREATE TABLE [dbo].[Customers]
+(
+    [Id] INT NOT NULL PRIMARY KEY,
+    [FullName] NVARCHAR(100) NULL,
+    [Email] VARCHAR(150) NULL,
+    [Address] NVARCHAR(500) NULL,
+    [Phone] VARCHAR(25) NULL,
+    [Gender] BIT NULL
+)
+//
+Click Execute (green play button)
+Your database now has the Customers table ready for use
+now right click on form1.cs click view code copy paste the code here
+//code
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Windows.Forms;
+
+namespace LocalDBApp
+{
+    public partial class Form1 : Form
+    {
+        // Connection string using existing Database1.mdf
+        private string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\Database1.mdf;Integrated Security=True";
+
+        // UI Controls
+        private DataGridView dgv = new DataGridView();
+        private TextBox txtId = new TextBox();
+        private TextBox txtName = new TextBox();
+        private TextBox txtEmail = new TextBox();
+        private TextBox txtAddress = new TextBox();
+        private TextBox txtPhone = new TextBox();
+        private CheckBox chkGender = new CheckBox();
+        private Button btnAdd = new Button();
+        private Button btnUpdate = new Button();
+        private Button btnDelete = new Button();
+        private Button btnLoad = new Button();
+
+        public Form1()
+        {
+            InitializeComponent();
+            InitializeCustomComponents();
+        }
+
+        private void InitializeCustomComponents()
+        {
+            this.Text = "Customer CRUD App";
+            this.Size = new System.Drawing.Size(800, 600);
+
+            dgv.Location = new System.Drawing.Point(20, 250);
+            dgv.Size = new System.Drawing.Size(740, 250);
+            this.Controls.Add(dgv);
+
+            int top = 20;
+
+            AddLabel("ID:", 20, top);
+            txtId.Location = new System.Drawing.Point(120, top);
+            this.Controls.Add(txtId);
+
+            top += 30;
+            AddLabel("Full Name:", 20, top);
+            txtName.Location = new System.Drawing.Point(120, top);
+            this.Controls.Add(txtName);
+
+            top += 30;
+            AddLabel("Email:", 20, top);
+            txtEmail.Location = new System.Drawing.Point(120, top);
+            this.Controls.Add(txtEmail);
+
+            top += 30;
+            AddLabel("Address:", 20, top);
+            txtAddress.Location = new System.Drawing.Point(120, top);
+            this.Controls.Add(txtAddress);
+
+            top += 30;
+            AddLabel("Phone:", 20, top);
+            txtPhone.Location = new System.Drawing.Point(120, top);
+            this.Controls.Add(txtPhone);
+
+            top += 30;
+            AddLabel("Gender (Male?):", 20, top);
+            chkGender.Location = new System.Drawing.Point(120, top);
+            this.Controls.Add(chkGender);
+
+            top += 40;
+
+            btnAdd.Text = "Add";
+            btnAdd.Location = new System.Drawing.Point(20, top);
+            btnAdd.Click += BtnAdd_Click;
+            this.Controls.Add(btnAdd);
+
+            btnUpdate.Text = "Update";
+            btnUpdate.Location = new System.Drawing.Point(100, top);
+            btnUpdate.Click += BtnUpdate_Click;
+            this.Controls.Add(btnUpdate);
+
+            btnDelete.Text = "Delete";
+            btnDelete.Location = new System.Drawing.Point(200, top);
+            btnDelete.Click += BtnDelete_Click;
+            this.Controls.Add(btnDelete);
+
+            btnLoad.Text = "Load Data";
+            btnLoad.Location = new System.Drawing.Point(300, top);
+            btnLoad.Click += BtnLoad_Click;
+            this.Controls.Add(btnLoad);
+        }
+
+        private void AddLabel(string text, int left, int top)
+        {
+            Label lbl = new Label();
+            lbl.Text = text;
+            lbl.Left = left;
+            lbl.Top = top + 4;
+            lbl.Width = 100;
+            this.Controls.Add(lbl);
+        }
+
+        private void BtnAdd_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string sql = "INSERT INTO Customers (Id, FullName, Email, Address, Phone, Gender) " +
+                                 "VALUES (@Id, @Name, @Email, @Address, @Phone, @Gender)";
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+
+                    if (!int.TryParse(txtId.Text, out int id))
+                    {
+                        MessageBox.Show("Invalid ID. Please enter a numeric value.");
+                        return;
+                    }
+
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    cmd.Parameters.AddWithValue("@Name", txtName.Text);
+                    cmd.Parameters.AddWithValue("@Email", txtEmail.Text);
+                    cmd.Parameters.AddWithValue("@Address", txtAddress.Text);
+                    cmd.Parameters.AddWithValue("@Phone", txtPhone.Text);
+                    cmd.Parameters.AddWithValue("@Gender", chkGender.Checked);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+
+                    MessageBox.Show("Customer added!");
+                    LoadData();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("❌ Error while adding customer:\n\n" + ex.Message);
+            }
+        }
+
+        private void BtnUpdate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string sql = "UPDATE Customers SET FullName=@Name, Email=@Email, Address=@Address, Phone=@Phone, Gender=@Gender WHERE Id=@Id";
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+
+                    if (!int.TryParse(txtId.Text, out int id))
+                    {
+                        MessageBox.Show("Invalid ID. Please enter a numeric value.");
+                        return;
+                    }
+
+                    cmd.Parameters.AddWithValue("@Id", id);
+                    cmd.Parameters.AddWithValue("@Name", txtName.Text);
+                    cmd.Parameters.AddWithValue("@Email", txtEmail.Text);
+                    cmd.Parameters.AddWithValue("@Address", txtAddress.Text);
+                    cmd.Parameters.AddWithValue("@Phone", txtPhone.Text);
+                    cmd.Parameters.AddWithValue("@Gender", chkGender.Checked);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+
+                    MessageBox.Show("Customer updated!");
+                    LoadData();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("❌ Error while updating customer:\n\n" + ex.Message);
+            }
+        }
+
+        private void BtnDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string sql = "DELETE FROM Customers WHERE Id=@Id";
+                    SqlCommand cmd = new SqlCommand(sql, conn);
+
+                    if (!int.TryParse(txtId.Text, out int id))
+                    {
+                        MessageBox.Show("Invalid ID. Please enter a numeric value.");
+                        return;
+                    }
+
+                    cmd.Parameters.AddWithValue("@Id", id);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+
+                    MessageBox.Show("Customer deleted!");
+                    LoadData();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(" Error while deleting customer:\n\n" + ex.Message);
+            }
+        }
+
+        private void BtnLoad_Click(object sender, EventArgs e)
+        {
+            LoadData();
+        }
+
+        private void LoadData()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string sql = "SELECT * FROM Customers";
+                    SqlDataAdapter adapter = new SqlDataAdapter(sql, conn);
+                    DataTable dt = new DataTable();
+                    adapter.Fill(dt);
+                    dgv.DataSource = dt;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error while loading data:\n\n" + ex.Message);
+            }
+        }
+    }
+}
+
+
+
