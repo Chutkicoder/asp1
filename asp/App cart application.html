@@ -1,0 +1,185 @@
+Open Visual Studio 2019
+Go to File > New > Project.
+Choose ASP.NET Web Application (.NET Framework).
+Name it WebApplication6 (important since namespaces must match).
+Click OK.
+Select Empty template.
+Check Web Forms.
+Click Create.
+Right-click project → Add >-New item-> Web Form → name it Default.aspx.
+Right-click project → Add > Class → add ProductRepository.cs
+Right-click project → Add > Class → add ShoppingCart.cs
+Replace the content of Default.aspx and Default.aspx.cs with the corrected code
+//then add code after that:
+//try to run from f5 or start utton if ssl certificate error then:
+Right-click the project → Properties → Web tab.
+In Servers → Project URL, change the URL from:
+https://localhost:44376/
+to
+http://localhost:54321/
+(You can pick any free port).
+Run the project (Ctrl + F5).
+Default.aspx
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs"
+    Inherits="WebApplication6.Default" %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Add to Cart Application</title>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div>
+            <h2>Available Products</h2>
+            <asp:GridView ID="ProductGridView" runat="server" AutoGenerateColumns="False"
+                DataKeyNames="ProductID">
+                <Columns>
+                    <asp:BoundField DataField="ProductID" HeaderText="Product ID" />
+                    <asp:BoundField DataField="ProductName" HeaderText="Product Name" />
+                    <asp:BoundField DataField="Price" HeaderText="Price" DataFormatString="{0:C}" />
+                    <asp:TemplateField HeaderText="Action">
+                        <ItemTemplate>
+                            <asp:Button ID="AddToCartButton" runat="server" Text="Add to Cart"
+                                OnClick="AddToCartButton_Click" />
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                </Columns>
+            </asp:GridView>
+
+            <h2>Shopping Cart</h2>
+            <asp:ListView ID="CartListView" runat="server" DataKeyNames="ProductID">
+                <ItemTemplate>
+                    <p>
+                        <%# Eval("ProductName") %>, Price: $<%# Eval("Price") %>
+                        <asp:Button ID="RemoveFromCartButton" runat="server"
+                            Text="Remove"
+                            CommandArgument='<%# Eval("ProductID") %>'
+                            OnClick="RemoveFromCartButton_Click" />
+                    </p>
+                </ItemTemplate>
+            </asp:ListView>
+
+            <asp:Label ID="LabelMessage" runat="server" ForeColor="Red"></asp:Label>
+        </div>
+    </form>
+</body>
+</html>
+
+Default.aspx.cs
+using System;
+using System.Linq;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace WebApplication6
+{
+    public partial class Default : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                // Load products only first time
+                ProductGridView.DataSource = ProductRepository.GetAllProducts();
+                ProductGridView.DataBind();
+
+                // Load cart if items exist
+                CartListView.DataSource = Cart.ProductsInCart;
+                CartListView.DataBind();
+            }
+        }
+
+        private ShoppingCart Cart
+        {
+            get
+            {
+                if (Session["Cart"] == null)
+                {
+                    Session["Cart"] = new ShoppingCart();
+                }
+                return (ShoppingCart)Session["Cart"];
+            }
+        }
+
+        protected void AddToCartButton_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            GridViewRow row = (GridViewRow)button.NamingContainer;
+            int productId = Convert.ToInt32(ProductGridView.DataKeys[row.RowIndex]["ProductID"]);
+
+            bool isProductInCart = Cart.ProductsInCart.Any(p => p.ProductID == productId);
+
+            if (isProductInCart)
+            {
+                LabelMessage.Text = "This product is already in the cart.";
+            }
+            else
+            {
+                Product product = ProductRepository.GetAllProducts().Find(p => p.ProductID == productId);
+                Cart.ProductsInCart.Add(product);
+
+                CartListView.DataSource = Cart.ProductsInCart;
+                CartListView.DataBind();
+                LabelMessage.Text = "Product added to cart.";
+            }
+        }
+
+        protected void RemoveFromCartButton_Click(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            int productId = Convert.ToInt32(button.CommandArgument);
+
+            Product productToRemove = Cart.ProductsInCart.Find(p => p.ProductID == productId);
+            if (productToRemove != null)
+            {
+                Cart.ProductsInCart.Remove(productToRemove);
+            }
+
+            CartListView.DataSource = Cart.ProductsInCart;
+            CartListView.DataBind();
+            LabelMessage.Text = "Product removed from cart.";
+        }
+    }
+}
+ProductRepository.cs
+using System.Collections.Generic;
+
+namespace WebApplication6
+{
+    public class ProductRepository
+    {
+        public static List<Product> GetAllProducts()
+        {
+            return new List<Product>
+            {
+                new Product { ProductID = 1, ProductName = "Product 1", Price = 10.99M },
+                new Product { ProductID = 2, ProductName = "Product 2", Price = 19.99M },
+                new Product { ProductID = 3, ProductName = "Product 3", Price = 5.99M }
+            };
+        }
+    }
+
+    public class Product
+    {
+        public int ProductID { get; set; }
+        public string ProductName { get; set; }
+        public decimal Price { get; set; }
+    }
+}
+ShoppingCart.cs
+using System.Collections.Generic;
+
+namespace WebApplication6
+{
+    public class ShoppingCart
+    {
+        public List<Product> ProductsInCart { get; set; }
+
+        public ShoppingCart()
+        {
+            ProductsInCart = new List<Product>();
+        }
+    }
+}
+
+
