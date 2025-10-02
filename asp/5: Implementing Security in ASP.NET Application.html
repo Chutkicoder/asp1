@@ -1,0 +1,63 @@
+Open Visual Studio 2019.
+Go to File → New → Project.
+Select ASP.NET Web Application (.NET Framework).
+Give your project a name (e.g., AuthDemoApp) and click OK.
+In the next dialog, choose MVC template.
+Under Authentication, select Individual User Accounts.//very important to selct idividual user 
+Click OK.
+Run the application (press F5).(starting me hi code nhi likha tab hi create new user)
+Navigate to Register and create a new user
+right-click on Controllers → Add → Controller → MVC 5 Controller – Empty → Name: DashboardController.
+//code
+using System.Web.Mvc;
+
+[Authorize] // Restricts access to authenticated users only
+public class DashboardController : Controller
+{
+    public ActionResult Index()
+    {
+        ViewBag.Message = "Welcome " + User.Identity.Name;
+        return View();
+    }
+}
+Right-click inside Index() → Add View.
+click ok no changes
+Path: Views/Dashboard/Index.cshtml
+//code
+@{
+    ViewBag.Title = "Dashboard";
+}
+<h2>@ViewBag.Message</h2>
+<p>This is a protected page.</p>
+Open Views/Shared/_Layout.cshtml.
+<ul class="nav navbar-nav">, add:
+//code
+<li>@Html.ActionLink("Dashboard", "Index", "Dashboard")</li>
+
+Open Controllers/AccountController.cs.
+Find the LogOff() method.
+By default:
+[HttpPost]
+[ValidateAntiForgeryToken]
+public ActionResult LogOff()
+{
+    AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+    return RedirectToAction("Index", "Home");
+}
+//Change it to
+[HttpPost]
+[ValidateAntiForgeryToken]
+public ActionResult LogOff()
+{
+    AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+    return RedirectToAction("Login", "Account");    //-->this
+}
+
+if logged in → Dashboard page opens.
+like hello@pandagmail.com
+If not logged in → Redirected to Login page automatically.
+Output
+Registered user can log in.
+Unauthorized users cannot access Dashboard.
+Logout redirects to Login page.
+
