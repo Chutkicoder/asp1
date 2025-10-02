@@ -1,0 +1,115 @@
+Select ASP.NET Web Application (.NET Framework).
+Give project name WebApplication5
+Click OK.
+Right click on the project → Add → Web Form.
+Name it Pract1.aspx.
+Visual Studio will also create Pract1.aspx.cs
+totally optional if you hvae to recreate foldera fter the code adding part
+Locate your old project folder, e.g., C:\Users\3520 i5 16GB\source\repos\WebApplication4\.because of error
+Copy the files you need:
+Pract1.aspx
+Pract1.aspx.cs
+In Solution Explorer, right-click the new project → Add → Existing Item.
+Browse to your copied files (Pract1.aspx and Pract1.aspx.cs).
+Select both → Click Add ->then pract1.aspx.designer.cs will be created
+//code pract1.aspx
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Pract1.aspx.cs" Inherits="WebApplication5.Pract1" %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Personal Information Form</title>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <h2>Enter Your Details</h2>
+
+        <!-- Name -->
+        <label for="txtname">Enter Name:</label>
+        <asp:TextBox ID="txtname" runat="server"></asp:TextBox>
+        <asp:RequiredFieldValidator ID="rfvName" runat="server" ControlToValidate="txtname"
+            ErrorMessage="* Name Required" ForeColor="Red"></asp:RequiredFieldValidator>
+        <br /><br />
+
+        <!-- Contact -->
+        <label for="txtcontact">Enter Contact No.:</label>
+        <asp:TextBox ID="txtcontact" runat="server"></asp:TextBox>
+        <asp:RequiredFieldValidator ID="rfvContact" runat="server" ControlToValidate="txtcontact"
+            ErrorMessage="* Contact Required" ForeColor="Red"></asp:RequiredFieldValidator>
+        <br /><br />
+
+        <!-- Location -->
+        <label for="lstlocation">Select Location:</label>
+        <asp:ListBox ID="lstlocation" runat="server">
+            <asp:ListItem>Thane</asp:ListItem>
+            <asp:ListItem>Mumbai</asp:ListItem>
+            <asp:ListItem>Dombivali</asp:ListItem>
+            <asp:ListItem>Kalyan</asp:ListItem>
+            <asp:ListItem>Andheri</asp:ListItem>
+            <asp:ListItem>Badlapur</asp:ListItem>
+            <asp:ListItem>Karjat</asp:ListItem>
+            <asp:ListItem>Dadar</asp:ListItem>
+        </asp:ListBox>
+        <br /><br />
+
+        <!-- Gender -->
+        <label>Select Gender:</label>
+        <asp:RadioButton ID="maleradiobutton" runat="server" GroupName="gender" Text="Male" />
+        <asp:RadioButton ID="femaleradiobutton" runat="server" GroupName="gender" Text="Female" />
+        <br /><br />
+
+        <!-- Education -->
+        <label>Education Details:</label>
+        <asp:CheckBox ID="chkssc" runat="server" Text="SSC" />
+        <asp:CheckBox ID="chkhsc" runat="server" Text="HSC" />
+        <asp:CheckBox ID="chkgraduate" runat="server" Text="Graduate" />
+        <br /><br />
+
+        <!-- Submit -->
+        <asp:Button ID="btnSubmit" runat="server" Text="Submit" OnClick="btnSubmit_Click" />
+
+        <br /><br />
+        <asp:Label ID="lblOutput" runat="server" ForeColor="Green"></asp:Label>
+    </form>
+</body>
+</html>
+
+//code pract1.aspx.cs
+
+using System.Web.UI;
+using System;
+using System.Text;
+
+namespace WebApplication5
+{
+    public partial class Pract1 : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            ValidationSettings.UnobtrusiveValidationMode = UnobtrusiveValidationMode.None;
+        }
+
+        protected void btnSubmit_Click(object sender, EventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("My Name is: " + txtname.Text + "<br/>");
+            sb.Append("My Contact No. is: " + txtcontact.Text + "<br/>");
+            sb.Append("My Location is: " + lstlocation.SelectedItem.Text + "<br/>");
+
+            if (maleradiobutton.Checked)
+                sb.Append("My Gender is: " + maleradiobutton.Text + "<br/>");
+            if (femaleradiobutton.Checked)
+                sb.Append("My Gender is: " + femaleradiobutton.Text + "<br/>");
+
+            StringBuilder education = new StringBuilder();
+            if (chkssc.Checked) education.Append(chkssc.Text + " ");
+            if (chkhsc.Checked) education.Append(chkhsc.Text + " ");
+            if (chkgraduate.Checked) education.Append(chkgraduate.Text);
+
+            sb.Append("My Education details are: " + education.ToString() + "<br/>");
+
+            lblOutput.Text = sb.ToString();
+        }
+    }
+}
+build solution->rebuild solution
