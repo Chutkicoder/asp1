@@ -1,0 +1,76 @@
+Q. To create RESTful services using ASP.NET Web API.
+ASP.NET Web Application(.NET Framework)->Web API Template
+model->right click->add->class->Product.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace pract8.Models
+{
+    public class Product
+    {
+        public int ProductId { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+    }
+}
+
+controller->right click->add->controller->ProductsController.cs
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
+using pract8.Models;
+
+namespace pract8.Controllers
+{
+    public class ProductsController : ApiController
+    {
+        static List<Product> products = new List<Product>() {
+            new Product { ProductId = 1, Name = "Laptop", Price = 50000, Quantity = 5 },
+            new Product { ProductId = 2, Name = "Mouse", Price = 500, Quantity = 10 }
+        };
+
+        // GET api/products
+        public IEnumerable<Product> Get() => products;
+
+        // GET api/products/1
+        public IHttpActionResult Get(int id)
+        {
+            var product = products.FirstOrDefault(p => p.ProductId == id);
+            return product == null ? (IHttpActionResult)NotFound() : Ok(product);
+        }
+
+        // POST api/products
+        public IHttpActionResult Post(Product product)
+        {
+            products.Add(product);
+            return Ok(products);
+        }
+
+        // PUT api/products/1
+        public IHttpActionResult Put(int id, Product product)
+        {
+            var existing = products.FirstOrDefault(p => p.ProductId == id);
+            if (existing == null) return NotFound();
+            existing.Name = product.Name;
+            existing.Price = product.Price;
+            existing.Quantity = product.Quantity;
+            return Ok(existing);
+        }
+
+        // DELETE api/products/1
+        public IHttpActionResult Delete(int id)
+        {
+            var product = products.FirstOrDefault(p => p.ProductId == id);
+            if (product == null) return NotFound();
+            products.Remove(product);
+            return Ok(products);
+        }
+    }
+}
+
+Right-click project → Manage NuGet Packages → make sure Microsoft.AspNet.WebApi and Microsoft.AspNet.WebApi.WebHost are installed.
+Run the code->in black bar click API->Product topic->click PUT api/Products/{id} ->done

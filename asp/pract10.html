@@ -1,0 +1,92 @@
+Q. To create an ASP.NET MVC application using Razor views and HTML Helpers.
+ASP.NET Web Application(.NET Framework)->MVC template
+models->right click->add->class->Student.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+namespace pract10.Models
+{
+    public class Student
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Course { get; set; }
+        public string Email { get; set; }
+    }
+}
+
+controller->right click->add->controller->StudentController.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using pract10.Models;
+namespace pract10.Controllers
+{
+    public class StudentController : Controller
+    {
+        static List<Models.Student> students = new List<Models.Student>();
+        public ActionResult Index()
+        {
+            return View(students);
+
+        }
+        public ActionResult Create()
+        {
+            return View();
+        }
+        [HttpPost]
+        public ActionResult Create(Student s)
+        {
+            students.Add(s);
+            return RedirectToAction("Index");
+        }
+    }
+}
+
+View->Student folder->right click->add->view->create.cshtml
+<h2>Create Student</h2>
+@model pract10.Models.Student
+@using (Html.BeginForm())
+{
+    <div>
+        @Html.LabelFor(m => m.Name)
+        @Html.TextBoxFor(m => m.Name)
+    </div>
+
+    <div>
+        @Html.LabelFor(m => m.Course)
+        @Html.TextBoxFor(m => m.Course)
+    </div>
+
+    <div>
+        @Html.LabelFor(m => m.Email)
+        @Html.TextBoxFor(m => m.Email)
+    </div>
+
+    <input type="submit" value="Save" />
+}
+
+View->Student folder->right click->add->view->Index.cshtml
+@model IEnumerable<pract10.Models.Student>
+<table>
+    <tr><th>Name&nbsp;&nbsp;</th><th>Course&nbsp;&nbsp;</th><th>Email&nbsp;&nbsp;</th></tr>
+    @foreach (var s in Model)
+    {
+        <tr>
+            <td>@s.Name&nbsp;&nbsp;</td>
+            <td>@s.Course&nbsp;&nbsp;</td>
+            <td>@s.Email&nbsp;&nbsp;</td>
+        </tr>
+    }
+</table>
+<p>@Html.ActionLink("Add Student", "Create")</p>
+
+
+
+
+Note:if not showing right output then go to
+App_Start->RouteConfig.cs->chancge this line
+defaults: new { controller = "Student", action = "Index", id = UrlParameter.Optional }

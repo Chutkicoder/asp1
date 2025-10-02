@@ -1,0 +1,86 @@
+Q. How to Create an application and View by VS2019
+
+ASP.NET Web Application(.NET Framework)->MVC Template
+In View->in Home and shared folder and outside delete all cshtml files also
+In Controller->delete HomeController.cs
+
+Then in Controller->right click->add->empty controller->HomeController.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace ControllerViewExample.Controllers
+{
+    public class HomeController : Controller
+    {
+        // GET: Home
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        public ActionResult Links()
+        {
+            return View();
+        }
+    }
+}
+
+Then in Controller->right click->add->empty controller->StuffController.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace ControllerViewExample.Controllers
+{
+    public class StuffController : Controller
+    {
+        // GET: Stuff
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        public ActionResult Nav()
+        {
+            return View();
+        }
+    }
+}
+
+see that in view folder stuff folder is automatically created
+inside view->home->right click->add->view->Index.cshtml
+@{
+    //ViewBag.Title = "Index";
+}
+<h2>Home-Index</h2>
+<ul>
+    <li><a href="/Home/Index">Home-Index</a></li>
+    <li><a href="/Home/Links">Home-Links</a></li>
+    <li><a href="/Stuff/Index">Stuff-Index</a></li>
+    <li><a href="/Stuff/Nav">Stuff-Nav</a></li>
+</ul>
+
+inside view->home->right click->add->view->Links.cshtml
+@{
+    ViewBag.Title = "Links";
+}
+<h2>Home-Links</h2>
+
+inside view->stuff->right click->add->view->Index.cshtml
+@{
+    ViewBag.Title = "Index";
+}
+<h2>Stuff-Index</h2>
+
+inside view->stuff->right click->add->view->Nav.cshtml
+@{
+    ViewBag.Title = "Nav";
+}
+<h2>Stuff-Nav</h2>
+
+run the main folder
