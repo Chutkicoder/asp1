@@ -1,0 +1,257 @@
+Q 4. Create an ASP.NET Core MVC application that demonstrates custom URL Routing by creating your own URL pattern. 
+The pattern should accept a student name in the URL and display the student's name as plain text in the browser.
+
+1) Create the project (VS2019)
+
+Open Visual Studio 2019 → File → New → Project.
+Search "ASP.NET Web Application (.NET Framework)" and select it. Click Next.
+Name the project (e.g. pract6d) and choose location. Click Create.
+In the template dialog:
+Select MVC (this is ASP.NET MVC 5)
+Target Framework: .NET Framework 4.7.2
+Authentication: No Authentication (for a simple demo)
+Click Create.
+You’ll get the default MVC template (Home, About, Contact, App_Start, Controllers, Views, Global.asax, Web.config).
+
+2) Add the controller
+
+Right-click Controllers → Add → Controller… → choose MVC 5 Controller - Empty → name it StudentController.
+Replace the generated code with this (copy exactly):
+using System.Web.Mvc;
+
+namespace pract6d.Controllers
+{
+    public class StudentController : Controller
+    {
+        // GET: /student/{studentName}
+        public ActionResult ReturnName(string studentName)
+        {
+            if (string.IsNullOrEmpty(studentName))
+                return Content("No student name supplied.");
+
+            // return plain text
+            return Content("Student name: " + studentName);
+        }
+    }
+}
+
+
+Notes:
+Use ActionResult (ASP.NET MVC 5 uses System.Web.Mvc).
+Content(...) returns plain text (no view needed).
+
+3) Add a custom route (RouteConfig.cs)
+Open App_Start\RouteConfig.cs. Replace/ensure it contains the custom route before the default route:
+using System.Web.Mvc;
+using System.Web.Routing;
+
+namespace pract6d
+{
+    public class RouteConfig
+    {
+        public static void RegisterRoutes(RouteCollection routes)
+        {
+            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+
+            // Custom route: matches /student/Chanchal
+            routes.MapRoute(
+                name: "StudentRoute",
+                url: "student/{studentName}",
+                defaults: new { controller = "Student", action = "ReturnName" }
+            );
+
+            // Default route (keep this after the custom route)
+            routes.MapRoute(
+                name: "Default",
+                url: "{controller}/{action}/{id}",
+                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
+            );
+        }
+    }
+}
+
+
+Important: route declaration order matters—custom route must come before the default route.
+
+4) Confirm Global.asax calls route registration
+Open Global.asax.cs (or Global.asax) and confirm Application_Start calls RouteConfig.RegisterRoutes:
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Routing;
+
+namespace pract6d
+{
+    public class MvcApplication : HttpApplication
+    {
+        protected void Application_Start()
+        {
+            AreaRegistration.RegisterAllAreas();
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            // bundles etc. if present
+        }
+    }
+}
+
+5) Run and test
+
+Press Ctrl+F5 (Start without debugging) or F5 (Start debugging).
+Visual Studio launches a browser to your app’s root address, e.g. http://localhost:12345/.
+Note the port in the address bar or in Project → Properties → Web → Project URL.
+In the browser go to:
+http://localhost:12345/student/Chanchal
+(Replace 12345 with your actual dev port and Chanchal with any name.)
+Expected output (plain text):
+Student name: Chanchal
+If you want names with spaces, URL-encode them (e.g. /student/John%20Doe).
+
+6) Troubleshooting ERR_CONNECTION_RESET / Can't reach page
+If you get ERR_CONNECTION_RESET or the browser can't connect, try these steps in order:
+Check the port: Make sure you use the same port Visual Studio started the app on (Project Properties → Web → Project URL).
+IIS Express running: Look in the system tray for the IIS Express icon after starting the project. If it’s not present, the app didn’t start.
+Use different browser to rule out browser caching.
+Project Properties → Web
+Ensure IIS Express is selected.
+Note/change the Project URL (e.g., change to http://localhost:5000/) and click Create Virtual Directory if shown.
+Save and restart VS, then run.
+Check firewall / antivirus: temporarily disable them (or add exception for iisexpress.exe) — some AVs/proxies block local ports.
+Delete the hidden .vs folder (in solution root) while Visual Studio is closed — this resets IIS Express config. Then re-open solution and run.
+Run Visual Studio as Administrator (sometimes needed to create bindings).
+Check applicationhost.config (if familiar): .vs\config\applicationhost.config to inspect bindings and ports for the site.
+Change port: sometimes the chosen port is blocked. Pick a random high port (e.g. 5000) in Project → Properties → Web → Project URL.
+If SSL causes issues: test http:// instead of https or uncheck SSL in project properties (or use the non-SSL port).
+Look at Output window in Visual Studio when starting — any exceptions during start will be shown there.
+
+
+
+
+Sir given code
+Program.cs
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+
+namespace WebApplication4
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CreateWebHostBuilder(args).Build().Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                   .UseStartup<Startup>();
+    }
+}
+
+2️⃣ Index.cshtml
+
+(Path: Views/Student/Index.cshtml)
+
+@{
+    ViewData["Title"] = "Student Index";
+}
+
+<h2>Student Index</h2>
+
+3️⃣ Startup.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace WebApplication4
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseCookiePolicy();
+
+            app.UseMvc(routes =>
+            {
+                // Custom Route
+                routes.MapRoute(
+                    name: "MYAPI",
+                    template: "ThumblKR/ReturnName/{studentName}",
+                    defaults: new { Controller = "Student", action = "ReturnName" }
+                );
+
+                // Default Route (kept for safety)
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}"
+                );
+            });
+        }
+    }
+}
+
+4️⃣ StudentController.cs
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebApplication4.Controllers
+{
+    public class StudentController : Controller
+    {
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        public IActionResult ReturnName(string studentName)
+        {
+            return Content("Student name: " + studentName);
+        }
+    }
+}
+
+
+Note : In browser type : https://localhost:5001/ThumblKR/ReturnName/ (your name)
